@@ -1,0 +1,239 @@
+{
+  "version": "32.3.0",
+  "pages": [
+    {
+      "id": "R21r9qRrpbIWtCbIFEg7",
+      "name": "Page-1",
+      "cells": [
+        {
+          "id": "1",
+          "type": "layer"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-31",
+          "type": "node",
+          "parent": "1"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-32",
+          "type": "node",
+          "parent": "1",
+          "label": "Use Case\nSistem Pemesanan TIket",
+          "html": "<font style=\"font-size: 16px;\">Use Case</font><div><font style=\"font-size: 16px;\">Sistem Pemesanan TIket</font></div>"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-36",
+          "type": "node",
+          "parent": "1",
+          "label": "Kasir"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-37",
+          "type": "node",
+          "parent": "1",
+          "label": "Pengunjung/\nCustomer",
+          "html": "Pengunjung/<div>Customer</div>"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-38",
+          "type": "node",
+          "parent": "1",
+          "label": "Administrator"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-39",
+          "type": "node",
+          "parent": "1",
+          "label": "Melakukan \nPembayaran Kasir & Cetak Struk",
+          "html": "Melakukan&nbsp;<div>Pembayaran Kasir &amp; Cetak Struk</div>"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-40",
+          "type": "node",
+          "parent": "1",
+          "label": "Menginput Transaksi Tiket"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-41",
+          "type": "node",
+          "parent": "1",
+          "label": "Menerapkan Kode\nPromo",
+          "html": "Menerapkan Kode<div>Promo</div>"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-43",
+          "type": "node",
+          "parent": "1",
+          "label": "Memilih Produk\nAdd-on",
+          "html": "Memilih Produk<div>Add-on</div>"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-45",
+          "type": "node",
+          "parent": "1",
+          "label": "Memesan Tiket\nOnline \n(Self-Service)",
+          "html": "Memesan Tiket<div>Online&nbsp;</div><div>(Self-<span style=\"background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\">Service)</span></div>"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-46",
+          "type": "node",
+          "parent": "1",
+          "label": "Melakukan\nPembayaran\nPayment\nGateway",
+          "html": "Melakukan<br>Pembayaran<div>Payment</div><div>Gateway</div>"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-47",
+          "type": "edge",
+          "parent": "1",
+          "source": "eWzcbJj_vilOEHLoQnNn-36",
+          "target": "eWzcbJj_vilOEHLoQnNn-40"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-48",
+          "type": "edge",
+          "parent": "1",
+          "source": "eWzcbJj_vilOEHLoQnNn-36",
+          "target": "eWzcbJj_vilOEHLoQnNn-39"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-49",
+          "type": "edge",
+          "parent": "1",
+          "source": "eWzcbJj_vilOEHLoQnNn-40",
+          "target": "eWzcbJj_vilOEHLoQnNn-41",
+          "label": "&lt;&lt;extend&gt;&gt;"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-50",
+          "type": "edge",
+          "parent": "1",
+          "source": "eWzcbJj_vilOEHLoQnNn-37",
+          "target": "eWzcbJj_vilOEHLoQnNn-45"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-51",
+          "type": "edge",
+          "parent": "1",
+          "source": "eWzcbJj_vilOEHLoQnNn-45",
+          "target": "eWzcbJj_vilOEHLoQnNn-46",
+          "label": "&lt;&lt;include&gt;&gt;"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-52",
+          "type": "edge",
+          "parent": "1",
+          "source": "eWzcbJj_vilOEHLoQnNn-45",
+          "target": "eWzcbJj_vilOEHLoQnNn-43",
+          "label": "&lt;&lt;extend&gt;&gt;"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-53",
+          "type": "edge",
+          "parent": "1",
+          "source": "eWzcbJj_vilOEHLoQnNn-40",
+          "target": "eWzcbJj_vilOEHLoQnNn-43",
+          "label": "&lt;&lt;extend&gt;&gt;"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-54",
+          "type": "edge",
+          "parent": "1",
+          "source": "eWzcbJj_vilOEHLoQnNn-45",
+          "target": "eWzcbJj_vilOEHLoQnNn-41",
+          "label": "&lt;&lt;extend&gt;&gt;"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-56",
+          "type": "node",
+          "parent": "1",
+          "label": "Petugas Gate"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-57",
+          "type": "node",
+          "parent": "1",
+          "label": "Melakukan Validasi\nQR Code\nTiket",
+          "html": "Melakukan Validasi<div>QR Code</div><div>Tiket</div>"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-58",
+          "type": "node",
+          "parent": "1",
+          "label": "Mengubah Status\nChecked-In",
+          "html": "Mengubah Status<div>Checked-In</div>"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-59",
+          "type": "edge",
+          "parent": "1",
+          "source": "eWzcbJj_vilOEHLoQnNn-56",
+          "target": "eWzcbJj_vilOEHLoQnNn-57"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-60",
+          "type": "edge",
+          "parent": "1",
+          "source": "eWzcbJj_vilOEHLoQnNn-57",
+          "target": "eWzcbJj_vilOEHLoQnNn-58",
+          "label": "&lt;&lt;include&gt;&gt;"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-61",
+          "type": "node",
+          "parent": "1",
+          "label": "Mengkases Laporan\nPenjualan",
+          "html": "Mengkases Laporan<div>Penjualan</div>"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-62",
+          "type": "node",
+          "parent": "1",
+          "label": "Mengelola Katalog\nAdd-on",
+          "html": "Mengelola Katalog<div>Add-on</div>"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-63",
+          "type": "node",
+          "parent": "1",
+          "label": "Mengelola Master\nEvent & Kuota",
+          "html": "Mengelola Master<div>Event &amp; Kuota</div>"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-64",
+          "type": "node",
+          "parent": "1",
+          "label": "Mengelola Kode\nPromo",
+          "html": "Mengelola Kode<div>Promo</div>"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-65",
+          "type": "edge",
+          "parent": "1",
+          "source": "eWzcbJj_vilOEHLoQnNn-38",
+          "target": "eWzcbJj_vilOEHLoQnNn-61"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-66",
+          "type": "edge",
+          "parent": "1",
+          "source": "eWzcbJj_vilOEHLoQnNn-38",
+          "target": "eWzcbJj_vilOEHLoQnNn-62"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-67",
+          "type": "edge",
+          "parent": "1",
+          "source": "eWzcbJj_vilOEHLoQnNn-38",
+          "target": "eWzcbJj_vilOEHLoQnNn-63"
+        },
+        {
+          "id": "eWzcbJj_vilOEHLoQnNn-68",
+          "type": "edge",
+          "parent": "1",
+          "source": "eWzcbJj_vilOEHLoQnNn-38",
+          "target": "eWzcbJj_vilOEHLoQnNn-64"
+        }
+      ]
+    }
+  ]
+}
