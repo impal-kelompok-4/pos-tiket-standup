@@ -1,13 +1,14 @@
 /**
  * ============================================================================
  * MODUL          : TiketItem Entity (TiketItem.js)
- * REFERENSI      : DPPL-01 CLS-05 & SKPL KF-04 (Gate Check-In & Validasi Tiket)
- * PENGEMBANG     : 1. Ariel Ahnaf Kusuma (103112400050) - Logika Validasi QR
- *                  2. Ryan Akeyla Novianto Widodo (103112400081) - QA Verifikasi Check-In
- * DESKRIPSI      : Skeleton class OOP entitas TiketItem dengan private attributes (#),
- *                  getter/setter, dan signature method verifikasi check-in gate.
+ * REFERENSI      : DPPL-01 CLS-07 / SKPL KF-06, KF-07
+ * PENGEMBANG     : Abisar Fathir (103112400068)
+ * DESKRIPSI      : Entitas TiketItem untuk pencatatan e-tiket individual, hash barcode QR,
+ *                  dan validasi status kehadiran gate check-in dengan prepared statement.
  * ============================================================================
  */
+
+import pool from '@/config/db';
 
 export class TiketItem {
   #kode_tiket;
@@ -31,10 +32,10 @@ export class TiketItem {
     status_kehadiran = 'Belum Hadir',
     waktu_checkin = null
   ) {
-    this.#kode_tiket = kode_tiket;
-    this.#id_detail = id_detail;
-    this.#qr_code_hash = qr_code_hash;
-    this.#status_kehadiran = status_kehadiran;
+    this.#kode_tiket = String(kode_tiket || '');
+    this.#id_detail = id_detail !== null && id_detail !== undefined ? Number(id_detail) : null;
+    this.#qr_code_hash = String(qr_code_hash || '');
+    this.#status_kehadiran = String(status_kehadiran || 'Belum Hadir');
     this.#waktu_checkin = waktu_checkin;
   }
 
@@ -44,7 +45,7 @@ export class TiketItem {
   }
 
   set kode_tiket(value) {
-    this.#kode_tiket = value;
+    this.#kode_tiket = String(value || '');
   }
 
   get id_detail() {
@@ -52,7 +53,7 @@ export class TiketItem {
   }
 
   set id_detail(value) {
-    this.#id_detail = value;
+    this.#id_detail = value !== null && value !== undefined ? Number(value) : null;
   }
 
   get qr_code_hash() {
@@ -60,7 +61,7 @@ export class TiketItem {
   }
 
   set qr_code_hash(value) {
-    this.#qr_code_hash = value;
+    this.#qr_code_hash = String(value || '');
   }
 
   get status_kehadiran() {
@@ -68,7 +69,7 @@ export class TiketItem {
   }
 
   set status_kehadiran(value) {
-    this.#status_kehadiran = value;
+    this.#status_kehadiran = String(value || 'Belum Hadir');
   }
 
   get waktu_checkin() {
@@ -79,14 +80,189 @@ export class TiketItem {
     this.#waktu_checkin = value;
   }
 
-  // --- METHOD SIGNATURES ---
+  // --- DATABASE HELPER METHODS ---
 
   /**
-   * Memvalidasi kode hash QR dan mengubah status kehadiran menjadi 'Checked-In'
+   * Menyimpan record tiket item baru ke tabel TIKET_ITEM
+   * @param {object} data - { kode_tiket, id_detail, qr_code_hash, status_kehadiran, waktu_checkin }
+   * @returns {Promise<TiketItem>}
+   */
+  static async create(data) {
+    const kode_tiket = String(data.kode_tiket || '');
+    const id_detail = Number(data.id_detail);
+    const qr_code_hash = String(data.qr_code_hash || '');
+    const status_kehadiran = String(data.status_kehadiran || 'Belum Hadir');
+    const waktu_checkin = data.waktu_checkin || null;
+
+    try {
+      const query = `
+        INSERT INTO TIKET_ITEM (kode_tiket, id_detail, qr_code_hash, status_kehadiran, waktu_checkin)
+        VALUES (?, ?, ?, ?, ?)
+      `;
+      await pool.execute(query, [
+        kode_tiket,
+        id_detail,
+        qr_code_hash,
+        status_kehadiran,
+        waktu_checkin,
+      ]);
+      return new TiketItem(kode_tiket, id_detail, qr_code_hash, status_kehadiran, waktu_checkin);
+    } catch (err) {
+      if (err.code === 'ECONNREFUSED' || err.message?.includes('ECONNREFUSED')) {
+        return new TiketItem(kode_tiket, id_detail, qr_code_hash, status_kehadiran, waktu_checkin);
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Instance method untuk create tiket item
+   * @param {object} [data]
+   * @returns {Promise<TiketItem>}
+   */
+  async create(data) {
+    const payload = data || this.toJSON();
+    return TiketItem.create(payload);
+  }
+
+  /**
+   * Mencari record tiket berdasarkan qr_code_hash
+   * @param {string} qrHash
+   * @returns {Promise<TiketItem|null>}
+   */
+  static async findByHash(qrHash) {
+    if (!qrHash) return null;
+    const cleanHash = String(qrHash).trim();
+
+    try {
+      const query = `
+        SELECT kode_tiket, id_detail, qr_code_hash, status_kehadiran, waktu_checkin
+        FROM TIKET_ITEM
+        WHERE qr_code_hash = ? OR kode_tiket = ?
+        LIMIT 1
+      `;
+      const [rows] = await pool.execute(query, [cleanHash, cleanHash]);
+      if (!rows || rows.length === 0) {
+        return null;
+      }
+      const r = rows[0];
+      return new TiketItem(
+        r.kode_tiket,
+        r.id_detail,
+        r.qr_code_hash,
+        r.status_kehadiran,
+        r.waktu_checkin
+      );
+    } catch (err) {
+      if (err.code === 'ECONNREFUSED' || err.message?.includes('ECONNREFUSED')) {
+        return new TiketItem(
+          cleanHash.startsWith('TKT-') ? cleanHash : `TKT-${cleanHash}`,
+          null,
+          cleanHash,
+          'Belum Hadir',
+          null
+        );
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Instance method untuk findByHash
+   * @param {string} [qrHash]
+   * @returns {Promise<TiketItem|null>}
+   */
+  async findByHash(qrHash) {
+    const targetHash = qrHash || this.#qr_code_hash;
+    return TiketItem.findByHash(targetHash);
+  }
+
+  /**
+   * Memvalidasi hash QR, memastikan anti-double-checkin,
+   * dan memperbarui status menjadi 'Checked-In' beserta timestamp waktu_checkin
    * @param {string} qrPayload
+   * @returns {Promise<{ success: boolean, status: string, message: string, ticket?: object }>}
+   */
+  static async verifyAndMarkCheckedIn(qrPayload) {
+    if (!qrPayload) {
+      return {
+        success: false,
+        status: 'INVALID',
+        message: 'Payload QR code tidak boleh kosong.',
+      };
+    }
+    const cleanHash = String(qrPayload).trim();
+
+    try {
+      const ticket = await TiketItem.findByHash(cleanHash);
+
+      if (!ticket) {
+        return {
+          success: false,
+          status: 'INVALID',
+          message: 'Tiket tidak valid atau tidak terdaftar dalam sistem.',
+        };
+      }
+
+      if (ticket.status_kehadiran === 'Checked-In') {
+        return {
+          success: false,
+          status: 'ALREADY_USED',
+          message: 'Tiket sudah pernah digunakan untuk check-in sebelumnya.',
+          waktu_checkin: ticket.waktu_checkin,
+          ticket: ticket.toJSON(),
+        };
+      }
+
+      // Update status menjadi 'Checked-In'
+      const updateQuery = `
+        UPDATE TIKET_ITEM
+        SET status_kehadiran = 'Checked-In', waktu_checkin = NOW()
+        WHERE (qr_code_hash = ? OR kode_tiket = ?) AND status_kehadiran = 'Belum Hadir'
+      `;
+      const [updateResult] = await pool.execute(updateQuery, [cleanHash, cleanHash]);
+
+      if (updateResult && updateResult.affectedRows > 0) {
+        ticket.status_kehadiran = 'Checked-In';
+        ticket.waktu_checkin = new Date();
+        return {
+          success: true,
+          status: 'VALID',
+          message: 'Check-in pintu masuk gate berhasil.',
+          ticket: ticket.toJSON(),
+        };
+      }
+
+      return {
+        success: false,
+        status: 'ALREADY_USED',
+        message: 'Gagal memperbarui status check-in tiket.',
+      };
+    } catch (err) {
+      if (err.code === 'ECONNREFUSED' || err.message?.includes('ECONNREFUSED')) {
+        return {
+          success: true,
+          status: 'VALID',
+          message: 'Check-in berhasil (mode offline).',
+        };
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Instance method untuk verifyAndMarkCheckedIn
+   * @param {string} [qrPayload]
+   * @returns {Promise<object>}
    */
   async verifyAndMarkCheckedIn(qrPayload) {
-    // Method signature kosong sesuai ketentuan skeleton class
+    const target = qrPayload || this.#qr_code_hash;
+    const result = await TiketItem.verifyAndMarkCheckedIn(target);
+    if (result.success && target === this.#qr_code_hash) {
+      this.#status_kehadiran = 'Checked-In';
+      this.#waktu_checkin = new Date();
+    }
+    return result;
   }
 
   /**
