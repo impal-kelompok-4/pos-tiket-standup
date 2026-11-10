@@ -1,10 +1,10 @@
 /**
  * ============================================================================
  * MODUL          : Report Controller (ReportController.js)
- * REFERENSI      : DPPL-01 CLS-15 & SKPL KF-12 (Laporan Rekapitulasi Penjualan)
- * PENGEMBANG     : Dimas Ramadhani (103112400065) - Rekapitulasi & Pelaporan Transaksi
- * DESKRIPSI      : Skeleton controller untuk menghasilkan laporan rekapitulasi
- *                  omset penjualan tiket, add-on, dan statistik transaksi PoS.
+ * REFERENSI      : DPPL-01 CLS-15 / SKPL KF-13
+ * PENGEMBANG     : Abisar Fathir (103112400068)
+ * DESKRIPSI      : Controller untuk menghasilkan laporan rekapitulasi penjualan,
+ *                  omzet harian, total tiket terjual, dan ringkasan transaksi.
  * ============================================================================
  */
 
@@ -14,7 +14,7 @@ export class ReportController {
   #transactionModel;
 
   /**
-   * Konstruktor ReportController
+   * Konstruktor ReportController dengan Dependency Injection
    * @param {Transaksi} [transactionModel=new Transaksi()]
    */
   constructor(transactionModel = new Transaksi()) {
@@ -30,18 +30,21 @@ export class ReportController {
     this.#transactionModel = value;
   }
 
-  // --- METHOD SIGNATURES ---
+  // --- BUSINESS LOGIC METHODS ---
 
   /**
-   * Mengambil data agregasi laporan penjualan untuk dashboard administrator
-   * @returns {Promise<object>}
+   * Mengambil data agregasi laporan penjualan untuk dashboard administrator:
+   * totalRevenue, totalTicketsSold, totalTransactions, dan dailyRevenue
+   * @returns {Promise<{ totalRevenue: number, totalTicketsSold: number, totalTransactions: number, dailyRevenue: Array }>}
    */
   async fetchReportData() {
-    // Signature method: agregasi query total omset, tiket terjual, dan status transaksi
+    const summary = await this.#transactionModel.getReportSummary();
+
     return {
-      totalRevenue: 0,
-      totalTicketsSold: 0,
-      totalTransactions: 0,
+      totalRevenue: Number(summary?.totalRevenue) || 0,
+      totalTicketsSold: Number(summary?.totalTicketsSold) || 0,
+      totalTransactions: Number(summary?.totalTransactions) || 0,
+      dailyRevenue: Array.isArray(summary?.dailyRevenue) ? summary.dailyRevenue : [],
     };
   }
 }

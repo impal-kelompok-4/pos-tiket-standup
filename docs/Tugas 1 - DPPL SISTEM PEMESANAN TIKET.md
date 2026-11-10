@@ -264,8 +264,13 @@ sequenceDiagram
     Kasir->>PoSView: Pilih Tiket & Kuantitas
     PoSView->>TransactionController: addItem(ticketId, qty)
     TransactionController->>TicketEntity: checkQuota(ticketId, qty)
-    TicketEntity-->>TransactionController: Quota Valid
-    TransactionController-->>PoSView: Update Keranjang
+    alt Kuota Tersedia [qty <= sisa_kuota]
+        TicketEntity-->>TransactionController: Quota Valid (true)
+        TransactionController-->>PoSView: Update Keranjang Berhasil
+    else Kuota Habis [qty > sisa_kuota]
+        TicketEntity-->>TransactionController: Quota Habis (false)
+        TransactionController-->>PoSView: Tampilkan Peringatan Kuota Habis
+    end
 ```
 
 ---
@@ -333,9 +338,14 @@ sequenceDiagram
     participant PrinterService
     Kasir->>PoSView: Input Nominal Pembayaran
     PoSView->>TransactionController: processPayment(cashAmount)
-    TransactionController->>TransactionEntity: saveTransaction()
-    TransactionController->>PrinterService: printReceipt()
-    PrinterService-->>PoSView: Struk Dicetak
+    alt Nominal Pembayaran Cukup [cashAmount >= totalTagihan]
+        TransactionController->>TransactionEntity: saveTransaction()
+        TransactionEntity-->>TransactionController: Transaksi Tersimpan
+        TransactionController->>PrinterService: printReceipt()
+        PrinterService-->>PoSView: Struk Dicetak (Kembalian Dihitung)
+    else Nominal Pembayaran Kurang [cashAmount < totalTagihan]
+        TransactionController-->>PoSView: Tampilkan Peringatan Uang Kurang
+    end
 ```
 
 ---
@@ -397,8 +407,12 @@ sequenceDiagram
     participant CartEntity
     Customer->>StorefrontView: Pilih Tiket & Jumlah
     StorefrontView->>OrderController: addToCart(ticketId, qty)
-    OrderController->>CartEntity: updateCart()
-    CartEntity-->>StorefrontView: Tampilkan Keranjang
+    alt Kuota Mencukupi [qty <= sisa_kuota]
+        OrderController->>CartEntity: updateCart()
+        CartEntity-->>StorefrontView: Tampilkan Keranjang & Checkout
+    else Kuota Tidak Mencukupi [qty > sisa_kuota]
+        OrderController-->>StorefrontView: Tampilkan Notifikasi Kuota Tidak Mencukupi
+    end
 ```
 
 ---
@@ -466,9 +480,15 @@ sequenceDiagram
     PaymentGateway-->>Customer: Tampilkan UI Pembayaran
     Customer->>PaymentGateway: Input Kredensial & Submit
     PaymentGateway->>PaymentController: webhookNotification(status)
-    PaymentController->>PaymentEntity: updatePaymentStatus(status)
-    PaymentEntity-->>PaymentController: Status Updated
-    PaymentController-->>PaymentPage: Redirect Sukses/Gagal
+    alt Pembayaran Berhasil [status = 'PAID']
+        PaymentController->>PaymentEntity: updatePaymentStatus('PAID')
+        PaymentEntity-->>PaymentController: Status Updated
+        PaymentController-->>PaymentPage: Redirect Sukses & Terbitkan E-Tiket
+    else Pembayaran Gagal / Kadaluarsa [status = 'EXPIRED' / 'FAILED']
+        PaymentController->>PaymentEntity: updatePaymentStatus('EXPIRED')
+        PaymentEntity-->>PaymentController: Status Updated (Batalkan Transaksi)
+        PaymentController-->>PaymentPage: Tampilkan Notifikasi Pembayaran Gagal
+    end
 ```
 
 ---
@@ -532,8 +552,13 @@ sequenceDiagram
     GateStaff->>GateScannerView: Scan QR Code
     GateScannerView->>ValidationController: validateQR(qrPayload)
     ValidationController->>TicketEntity: verifyAndMarkCheckedIn(qrPayload)
-    TicketEntity-->>ValidationController: Status Valid
-    ValidationController-->>GateScannerView: Tampilkan Akses Diterima (Hijau)
+    alt Tiket Valid & Belum Terpakai [Valid & Unused]
+        TicketEntity-->>ValidationController: Status Valid
+        ValidationController-->>GateScannerView: Tampilkan Akses Diterima (Hijau)
+    else Tiket Tidak Terdaftar / Sudah Check-In [Invalid / Already Used]
+        TicketEntity-->>ValidationController: Status Invalid / Already Used
+        ValidationController-->>GateScannerView: Bunyikan Peringatan & Tampilkan Akses Ditolak (Merah)
+    end
 ```
 
 ---
@@ -573,8 +598,13 @@ sequenceDiagram
     participant DB as MySQL Database
     ValidationController->>TicketEntity: setCheckedIn(ticketId)
     TicketEntity->>DB: UPDATE status = 'Checked-In'
-    DB-->>TicketEntity: Rows Affected
-    TicketEntity-->>ValidationController: Update Berhasil
+    alt Update Basis Data Berhasil [Success]
+        DB-->>TicketEntity: Rows Affected (1)
+        TicketEntity-->>ValidationController: Update Berhasil
+    else Terjadi Kegagalan Koneksi [DB Error]
+        DB-->>TicketEntity: Connection Error
+        TicketEntity-->>ValidationController: Log Error & Jadwalkan Retry
+    end
 ```
 
 ---
@@ -637,9 +667,13 @@ sequenceDiagram
     participant EventEntity
     Admin->>AdminEventView: Input Data & Kuota Event
     AdminEventView->>EventController: saveEventData(data)
-    EventController->>EventEntity: insertOrUpdate(data)
-    EventEntity-->>EventController: Success
-    EventController-->>AdminEventView: Pesan Sukses
+    alt Form Lengkap & Nilai Kuota Valid [Valid]
+        EventController->>EventEntity: insertOrUpdate(data)
+        EventEntity-->>EventController: Success
+        EventController-->>AdminEventView: Tampilkan Pesan Sukses
+    else Form Tidak Lengkap / Kuota Negatif [Invalid]
+        EventController-->>AdminEventView: Tampilkan Peringatan Validasi Form
+    end
 ```
 
 ---
@@ -702,9 +736,13 @@ sequenceDiagram
     participant AddonEntity
     Admin->>AdminAddonView: Input Detail Add-on
     AdminAddonView->>AddonController: saveAddon(data)
-    AddonController->>AddonEntity: updateKatalog(data)
-    AddonEntity-->>AddonController: Success
-    AddonController-->>AdminAddonView: Pesan Sukses
+    alt Harga & Stok Valid [Valid >= 0]
+        AddonController->>AddonEntity: updateKatalog(data)
+        AddonEntity-->>AddonController: Success
+        AddonController-->>AdminAddonView: Tampilkan Pesan Sukses
+    else Harga / Stok Bernilai Negatif [Invalid < 0]
+        AddonController-->>AdminAddonView: Tampilkan Peringatan Kesalahan Input
+    end
 ```
 
 ---
@@ -767,9 +805,13 @@ sequenceDiagram
     participant PromoEntity
     Admin->>AdminPromoView: Input Kode & Kuota
     AdminPromoView->>PromoController: createPromo(data)
-    PromoController->>PromoEntity: simpanPromo(data)
-    PromoEntity-->>PromoController: Success
-    PromoController-->>AdminPromoView: Pesan Sukses
+    alt Kode Promo Unik [Tidak Duplikat]
+        PromoController->>PromoEntity: simpanPromo(data)
+        PromoEntity-->>PromoController: Success
+        PromoController-->>AdminPromoView: Tampilkan Pesan Sukses
+    else Kode Promo Sudah Ada [Duplikat]
+        PromoController-->>AdminPromoView: Tampilkan Peringatan Kode Promo Duplikat
+    end
 ```
 
 ---
@@ -827,32 +869,23 @@ Identifikasi objek yang terkait dengan Use Case #10 Memilih Produk Add-on:
 | 2 | `OrderController` | Controller (Pemrosesan) |
 | 3 | `AddonEntity` | Entity (Basisdata) |
 
-#### Gambar 31: Sequence Diagram Memilih Produk Add-on (Kasir)
+#### Gambar 31: Sequence Diagram Memilih Produk Add-on (Kasir / Customer)
 ```mermaid
 sequenceDiagram
-    actor Kasir
+    actor Pengguna as Kasir / Customer
     participant AddonSelectorModal
     participant OrderController
     participant AddonEntity
-    Kasir->>AddonSelectorModal: Pilih Add-on & Kty
+    Pengguna->>AddonSelectorModal: Pilih Add-on & Qty
     AddonSelectorModal->>OrderController: addAddon(id, qty)
     OrderController->>AddonEntity: checkStok(id, qty)
-    AddonEntity-->>OrderController: Stok Valid
-    OrderController-->>AddonSelectorModal: Update Keranjang
-```
-
-#### Gambar 32: Sequence Diagram Memilih Produk Add-on (Customer)
-```mermaid
-sequenceDiagram
-    actor Customer
-    participant AddonSelectorModal
-    participant OrderController
-    participant AddonEntity
-    Customer->>AddonSelectorModal: Pilih Add-on & Kty
-    AddonSelectorModal->>OrderController: addAddon(id, qty)
-    OrderController->>AddonEntity: checkStok(id, qty)
-    AddonEntity-->>OrderController: Stok Valid
-    OrderController-->>AddonSelectorModal: Update Keranjang
+    alt Stok Add-on Tersedia [qty <= stok]
+        AddonEntity-->>OrderController: Stok Valid
+        OrderController-->>AddonSelectorModal: Update Keranjang
+    else Stok Add-on Habis [qty > stok]
+        AddonEntity-->>OrderController: Stok Habis (false)
+        OrderController-->>AddonSelectorModal: Tampilkan Peringatan Stok Habis
+    end
 ```
 
 ---
@@ -866,7 +899,7 @@ sequenceDiagram
 * **Alternative Flow**: Kode promo tidak valid, expired, atau kuota habis, sistem menampilkan notifikasi penolakan voucher.
 * **Post-Condition**: Potongan harga promo berhasil diterapkan pada total akhir transaksi.
 
-#### Gambar 33: Activity Diagram Menerapkan Kode Promo
+#### Gambar 32: Activity Diagram Menerapkan Kode Promo
 ```mermaid
 stateDiagram-v2
     [*] --> InputKode
@@ -880,11 +913,11 @@ stateDiagram-v2
 #### UI Design dan Deskripsi Objek UI #11
 Antarmuka komponen input kode promo pada halaman transaksi.
 
-#### Gambar 34: UI Komponen Input Kode Promo (Kasir)
+#### Gambar 33: UI Komponen Input Kode Promo (Kasir)
 ![UI Komponen Input Kode Promo (Kasir)](doc_tugas1/media/image4.png)  
 *(Lokasi File UI Alternatif: `doc_tugas1/UI/1791434437699-5b2aadb6-c872-4e20-a07d-0862ff0852cd_1.jpg`)*
 
-#### Gambar 35: UI Komponen Input Kode Promo (Customer)
+#### Gambar 34: UI Komponen Input Kode Promo (Customer)
 ![UI Komponen Input Kode Promo (Customer)](doc_tugas1/media/image30.png)  
 *(Lokasi File UI Alternatif: `doc_tugas1/UI/10-mobile-checkout.png`)*
 
@@ -909,7 +942,7 @@ Identifikasi objek yang terkait dengan Use Case #11 Menerapkan Kode Promo:
 | 2 | `PromoController` | Controller (Pemrosesan) |
 | 3 | `PromoEntity` | Entity (Basisdata) |
 
-#### Gambar 36: Sequence Diagram Menerapkan Kode Promo
+#### Gambar 35: Sequence Diagram Menerapkan Kode Promo
 ```mermaid
 sequenceDiagram
     actor Customer
@@ -919,8 +952,13 @@ sequenceDiagram
     Customer->>PromoInputComponent: Input Kode Promo
     PromoInputComponent->>PromoController: applyPromo(kode)
     PromoController->>PromoEntity: validatePromo(kode)
-    PromoEntity-->>PromoController: Promo Valid
-    PromoController-->>PromoInputComponent: Diskon Diterapkan
+    alt Kode Promo Valid & Kuota Ada [Valid]
+        PromoEntity-->>PromoController: Promo Valid (Nominal Potongan)
+        PromoController-->>PromoInputComponent: Diskon Diterapkan ke Total
+    else Kode Promo Tidak Valid / Kadaluarsa / Kuota Habis [Invalid]
+        PromoEntity-->>PromoController: Promo Invalid (false)
+        PromoController-->>PromoInputComponent: Tampilkan Notifikasi Penolakan Voucher
+    end
 ```
 
 ---
@@ -934,7 +972,7 @@ sequenceDiagram
 * **Alternative Flow**: Tidak ada transaksi pada rentang tanggal yang dipilih, grafik menampilkan status data kosong.
 * **Post-Condition**: Laporan penjualan berhasil ditampilkan dan diunduh dalam bentuk file ekspor.
 
-#### Gambar 37: Activity Diagram Mengakses Laporan Penjualan
+#### Gambar 36: Activity Diagram Mengakses Laporan Penjualan
 ```mermaid
 stateDiagram-v2
     [*] --> PilihFilterWaktu
@@ -946,7 +984,7 @@ stateDiagram-v2
 #### UI Design dan Deskripsi Objek UI #12
 Antarmuka dasbor laporan penjualan dan grafik statistik transaksi bagi Admin.
 
-#### Gambar 38: UI Dasbor Admin Laporan Penjualan (ADM-04)
+#### Gambar 37: UI Dasbor Admin Laporan Penjualan (ADM-04)
 ![UI Dasbor Admin Laporan Penjualan](doc_tugas1/media/image36.png)  
 *(Lokasi File UI Alternatif: `doc_tugas1/UI/1791434437699-5b2aadb6-c872-4e20-a07d-0862ff0852cd_6.jpg`)*
 
@@ -972,7 +1010,7 @@ Identifikasi objek yang terkait dengan Use Case #12 Mengakses Laporan Penjualan:
 | 2 | `ReportController` | Controller (Pemrosesan) |
 | 3 | `TransactionEntity` | Entity (Basisdata) |
 
-#### Gambar 39: Sequence Diagram Mengakses Laporan Penjualan
+#### Gambar 38: Sequence Diagram Mengakses Laporan Penjualan
 ```mermaid
 sequenceDiagram
     actor Admin
@@ -982,8 +1020,13 @@ sequenceDiagram
     Admin->>ReportDashboardView: Pilih Filter Waktu
     ReportDashboardView->>ReportController: fetchReportData()
     ReportController->>TransactionEntity: queryTransactions()
-    TransactionEntity-->>ReportController: Data Laporan
-    ReportController-->>ReportDashboardView: Tampilkan Grafik
+    alt Data Transaksi Tersedia [Ada Transaksi]
+        TransactionEntity-->>ReportController: Data Rekapitulasi Transaksi
+        ReportController-->>ReportDashboardView: Tampilkan Visualisasi Grafik & Tabel
+    else Tidak Ada Transaksi Pada Periode Terpilih [Data Kosong]
+        TransactionEntity-->>ReportController: Empty Result
+        ReportController-->>ReportDashboardView: Tampilkan Status Data Kosong
+    end
 ```
 
 ---
@@ -992,7 +1035,7 @@ sequenceDiagram
 
 Berikut adalah **Entity Relationship Diagram (ERD)** dari Sistem Pemesanan Tiket:
 
-#### Gambar 40: Entity Relationship Diagram (ERD)
+#### Gambar 39: Entity Relationship Diagram (ERD)
 ```mermaid
 erDiagram
     PENGGUNA ||--o{ TRANSAKSI : melayani_atau_memproses
@@ -1067,7 +1110,7 @@ erDiagram
 
 Berikut merupakan rancangan diagram kelas keseluruhan yang merepresentasikan hubungan antara **Boundary**, **Controller**, dan **Entity** pada Sistem Pemesanan Tiket menggunakan arsitektur Model-View-Controller (MVC):
 
-#### Gambar 41: Diagram Kelas Keseluruhan
+#### Gambar 40: Diagram Kelas Keseluruhan
 ```mermaid
 classDiagram
     class PoSView {
