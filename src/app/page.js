@@ -2,10 +2,10 @@
  * ============================================================================
  * MODUL          : Beranda Portal Sistem Pemesanan Tiket (page.js)
  * REFERENSI      : DPPL-01 Bab 2.3 & SKPL (Overview Aplikasi Stand-Up Comedy)
- * PENGEMBANG     : Keishin Naufa Alfaridzhi (103112400061) - UI/UX & Frontend Next.js
+ * PENGEMBANG     : Keishin Naufa Alfaridzhi - 103112400061 (Lead UI/UX & Frontend)
  * DESKRIPSI      : Halaman beranda utama sistem tiket dan PoS Stand-Up Comedy
  *                  dengan identitas visual resmi Tiket., hero banner acara,
- *                  dan navigasi portal kasir.
+ *                  dan navigasi cepat (Quick Access Hub) ke 5 modul utama.
  * ============================================================================
  */
 
@@ -47,16 +47,158 @@ export default function Home() {
           </div>
         </div>
 
-        <Link
-          href="/login"
-          className="w-full sm:w-auto text-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold rounded-xl shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
-        >
-          Masuk ke PoS Kasir
-        </Link>
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <Link
+            href="/order"
+            className="flex-1 sm:flex-initial text-center px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-xl border border-blue-200 transition-colors"
+          >
+            Pesan Online
+          </Link>
+          <Link
+            href="/pos"
+            className="flex-1 sm:flex-initial text-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600"
+          >
+            Buka Kasir PoS
+          </Link>
+        </div>
       </header>
 
       {/* Main Content Area */}
       <main className="max-w-6xl w-full mx-auto my-6 sm:my-8 space-y-8">
+        {/* Quick Access Hub (Navigasi Cepat Pengujian Dosen & Asisten) */}
+        <section aria-label="Quick Access Hub" className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2 mb-4">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
+                Portal Akses Cepat Pengujian
+              </span>
+              <h2 className="text-base font-bold text-slate-900">
+                Navigasi Instan Modul Sistem
+              </h2>
+            </div>
+            <span className="text-xs text-slate-500 font-medium">
+              Akses langsung tanpa hambatan login
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            {/* 1. Kasir PoS */}
+            <Link
+              href="/pos"
+              className="p-3.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 transition-all group flex flex-col justify-between"
+            >
+              <div>
+                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 group-hover:text-blue-600">
+                  Kasir PoS
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Katalog, keranjang, diskon promo, dan hitung kembalian.
+                </p>
+              </div>
+              <span className="text-xs font-semibold text-blue-600 mt-3 inline-block">
+                /pos &rarr;
+              </span>
+            </Link>
+
+            {/* 2. Beli Tiket Online */}
+            <Link
+              href="/order"
+              className="p-3.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 transition-all group flex flex-col justify-between"
+            >
+              <div>
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 group-hover:text-blue-600">
+                  Beli Tiket Online
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Storefront pemesanan mandiri, add-on, checkout QRIS/VA.
+                </p>
+              </div>
+              <span className="text-xs font-semibold text-emerald-600 mt-3 inline-block">
+                /order &rarr;
+              </span>
+            </Link>
+
+            {/* 3. Gate Scanner */}
+            <Link
+              href="/gate"
+              className="p-3.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 transition-all group flex flex-col justify-between"
+            >
+              <div>
+                <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                  </svg>
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 group-hover:text-blue-600">
+                  Gate Scanner
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Simulasi scan QR tiket, validasi kehadiran, anti double check-in.
+                </p>
+              </div>
+              <span className="text-xs font-semibold text-slate-900 mt-3 inline-block">
+                /gate &rarr;
+              </span>
+            </Link>
+
+            {/* 4. Admin Dasbor */}
+            <Link
+              href="/admin"
+              className="p-3.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 transition-all group flex flex-col justify-between"
+            >
+              <div>
+                <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                  </svg>
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 group-hover:text-blue-600">
+                  Admin Dasbor
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Kelola event, kuota tiket, add-on, voucher promo, laporan omzet.
+                </p>
+              </div>
+              <span className="text-xs font-semibold text-amber-700 mt-3 inline-block">
+                /admin &rarr;
+              </span>
+            </Link>
+
+            {/* 5. Login Multi-Role */}
+            <Link
+              href="/login"
+              className="p-3.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 transition-all group flex flex-col justify-between"
+            >
+              <div>
+                <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  </svg>
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 group-hover:text-blue-600">
+                  Login Multi-Role
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Akses login peran Kasir, Admin Utama, dan Petugas Gate.
+                </p>
+              </div>
+              <span className="text-xs font-semibold text-purple-700 mt-3 inline-block">
+                /login &rarr;
+              </span>
+            </Link>
+          </div>
+        </section>
+
         {/* Navy Hero Banner Acara (DESIGN.md Section 2.B) */}
         <section className="bg-slate-900 rounded-2xl p-6 sm:p-10 text-white border border-slate-800 shadow-sm relative overflow-hidden">
           <div className="max-w-3xl">
@@ -93,17 +235,17 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <Link
-                href="/login"
+                href="/order"
                 className="px-6 py-3.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-sm transition-all text-center focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-900"
               >
-                Buka Sistem Kasir (Login)
+                Pesan Tiket Sekarang
               </Link>
-              <a
-                href="#katalog-tiket"
+              <Link
+                href="/pos"
                 className="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-sm font-medium rounded-xl border border-slate-700 transition-all text-center focus:outline-none focus:ring-2 focus:ring-slate-500"
               >
-                Lihat Katalog Tiket
-              </a>
+                Buka Layar Kasir PoS
+              </Link>
             </div>
           </div>
         </section>
@@ -144,10 +286,10 @@ export default function Home() {
               <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
                 <span>Akses reguler panggung</span>
                 <Link
-                  href="/login"
+                  href="/order"
                   className="font-semibold text-blue-600 hover:text-blue-700 focus:outline-none focus:underline"
                 >
-                  Pesan di Kasir &rarr;
+                  Pesan Online &rarr;
                 </Link>
               </div>
             </div>
@@ -171,10 +313,10 @@ export default function Home() {
               <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
                 <span>Akses reguler panggung</span>
                 <Link
-                  href="/login"
+                  href="/order"
                   className="font-semibold text-blue-600 hover:text-blue-700 focus:outline-none focus:underline"
                 >
-                  Pesan di Kasir &rarr;
+                  Pesan Online &rarr;
                 </Link>
               </div>
             </div>
